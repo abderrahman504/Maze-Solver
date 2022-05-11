@@ -1,2 +1,1 @@
-# Lab-7
-Maze Solver
+Maze solver
