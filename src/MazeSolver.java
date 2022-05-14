@@ -9,7 +9,6 @@ public class MazeSolver
     class Cell extends Point
     {
         private Cell entry;
-        private boolean checked = false;
 
         Cell(Cell entry, Point coordinates)
         {
@@ -17,15 +16,6 @@ public class MazeSolver
             this.entry = entry;
         }
 
-        /**
-         * A cell is considered checked if the search algorithm has already visited the cell
-         * and added the cells that branch from it to a queue, stack or p. queue.
-         * @return true if the cell has been checked already and false otherwise.
-         */
-        boolean checked()
-        {
-            return checked;
-        }
 
         /**
          * 
