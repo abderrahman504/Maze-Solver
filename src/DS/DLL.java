@@ -18,19 +18,19 @@ public class DLL implements ILinkedList
         }
     }
 
-    DLL()
+    public DLL()
     {
         first = last = null;
         size = 0;
     }
     
-    DLL(Object element)
+    public DLL(Object element)
     {
         size = 0;
         this.add(element);
     }
 
-    DLL(Object[] elements)
+    public DLL(Object[] elements)
     {
         size = 0;
         for (Object i : elements)

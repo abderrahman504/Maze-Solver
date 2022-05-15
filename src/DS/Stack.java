@@ -7,13 +7,13 @@ public class Stack implements IStack
 {
     private SLL content;
 
-    Stack(Object element)
+    public Stack(Object element)
     {
         content = new SLL();
         content.add(element);
     }
 
-    Stack()
+    public Stack()
     {
         content = new SLL();
     }

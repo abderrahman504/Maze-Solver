@@ -5,7 +5,7 @@ public class Queue implements IQueue, ILinkedBased
 {
     private SLL Q;
 
-    Queue()
+    public Queue()
     {
         Q = new SLL();
     }

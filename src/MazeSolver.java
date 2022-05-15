@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.Scanner;
 
 
-public class MazeSolver 
+public class MazeSolver //implememts IMazeSolver
 {
     class Cell extends Point
     {
@@ -12,10 +12,9 @@ public class MazeSolver
 
         Cell(Cell entry, Point coordinates)
         {
-            this.setLocation(coordinates);
             this.entry = entry;
+            this.setLocation(coordinates);
         }
-
 
         /**
          * 
@@ -66,6 +65,42 @@ public class MazeSolver
         return maze;
     }
 
+
+
+    public int[][] bestFS(File maze)
+    {
+        String[] sMaze;
+        try
+        {
+            sMaze = file_to_strings(maze);
+        }
+        catch (Exception e)
+        {
+            //Handle invalid file
+            return new int[1][1];
+        }
+        boolean[][] checkedCells = new boolean[sMaze.length][sMaze[0].length()];
+        Cell start, end;
+        start = end = new Cell(null, new Point(-1, -1));
+        for (int i=0; i<sMaze.length; i++)
+        {
+            for (int j=0; j<sMaze[0].length(); j++)
+            {
+                checkedCells[i][j] = false;
+                switch (sMaze[i].charAt(j))
+                {
+                    case "S":
+
+                    case "E":
+
+                }
+            }
+        }
+
+
+
+        return new int[1][1];
+    }
 }
 
 

@@ -23,7 +23,7 @@ public class PQueue<V> implements IPQueue<V>
 
     SLL Q;
 
-    PQueue()
+    public PQueue()
     {
         Q = new SLL();
     }
