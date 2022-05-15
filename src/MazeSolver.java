@@ -74,7 +74,7 @@ public class MazeSolver //implememts IMazeSolver
 
 
 
-    public int[][] bestFS(File maze)
+    public int[][] solveBestFS(File maze)
     {
         String[] sMaze;
         try
@@ -122,6 +122,7 @@ public class MazeSolver //implememts IMazeSolver
                 {
                     case 'S':
                     start = new Point(j, i);
+                    break;
                     case 'E':
                     end = new Point(j, i);
                 }
@@ -161,7 +162,7 @@ public class MazeSolver //implememts IMazeSolver
                     return endFound;
                     default:
                     if (checkedCells[(int)nextLoc.getY()][(int)nextLoc.getX()]) break;
-                    Cell newCell = new Cell(currentCell, end);
+                    Cell newCell = new Cell(currentCell, nextLoc);
                     checkedCells[(int)nextLoc.getY()][(int)nextLoc.getX()] = true;
                     /*
                     The heuristic function calculates the minimum possible number of moves it would
@@ -212,7 +213,11 @@ interface IMazeSolver
     */
     public int[][] solveDFS(File maze);
 
-
+    /**
+     * Reads the maze file and solves it using a Best First Search.
+     * @param maze Maze file.
+     * @return The path through the maze.
+     */
     public int[][] solveBestFS(File maze);
 
 

@@ -33,7 +33,7 @@ public class PQueue<V> implements IPQueue<V>
         for (int i=0; i<Q.size(); i++)
         {
             @SuppressWarnings("unchecked") Pair x = (Pair) Q.get(i);
-            if (x.key > key)
+            if (x.key() > key)
             {
                 Q.add(i, new Pair(value, key));
                 return;
