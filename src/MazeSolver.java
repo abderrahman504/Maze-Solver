@@ -5,7 +5,7 @@ import java.util.Scanner;
 import java.lang.Math;
 
 
-public class MazeSolver //implememts IMazeSolver
+public class MazeSolver implements IMazeSolver
 {
     static class Cell extends Point
     {
@@ -72,6 +72,230 @@ public class MazeSolver //implememts IMazeSolver
         return maze;
     }
 
+
+    public int[][] solveDFS(File maze)
+    {
+        String[] sMaze;
+        try
+        {
+            sMaze = file_to_strings(maze);
+        }
+        catch (Exception e)
+        {
+            //Handle invalid file
+            return new int[0][0];
+        }
+        //---------------------------------------------------------------------------------------
+        Cell currentCell = find_path_DFS(sMaze);
+        
+        Stack stck = new Stack();
+        while (currentCell.entry != null)
+        {
+            stck.push(currentCell);
+            currentCell = currentCell.entry();
+        }
+        stck.push(currentCell);
+
+        int[][] path = new int[stck.size()][2];
+        for (int i=0; i<path.length; i++)
+        {
+            Point loc = (Point) stck.pop();
+            path[i][0] = (int) loc.getY();
+            path[i][1] = (int) loc.getX();
+        }
+
+        return path;
+    }
+    private static Cell find_path_DFS(String[] sMaze)
+    {
+        boolean[][] checkedCells = new boolean[sMaze.length][sMaze[0].length()];
+        Point start, end;
+        start = end = new Point(-1, -1);
+        for (int i=0; i<sMaze.length; i++)
+        {
+            for (int j=0; j<sMaze[0].length(); j++)
+            {
+                checkedCells[i][j] = false;
+                switch (sMaze[i].charAt(j))
+                {
+                    case 'S':
+                    start = new Point(j, i);
+                    break;
+                    case 'E':
+                    end = new Point(j, i);
+                }
+            }
+        }
+        Stack S = new Stack();
+        boolean endFound = false;
+        Cell currentCell = new Cell(null, start);
+
+        endFound = check_adjacents_DFS(currentCell, sMaze, checkedCells, end, S);
+
+        while(!endFound && !S.isEmpty())
+        {
+            currentCell = (Cell) S.pop();
+            endFound = check_adjacents_DFS(currentCell, sMaze, checkedCells, end, S);
+        }
+
+        Cell End = new Cell(currentCell, end);
+        return End;
+    }
+
+    private static boolean check_adjacents_DFS(Cell currentCell, String[] sMaze, boolean[][] checkedCells, Point end, Stack S)
+    {
+        boolean endFound = false;
+        Direction checkingDirection = Direction.left;
+        Point nextLoc = new Point((int) currentCell.getX()-1, (int) currentCell.getY());
+        for (int i=0; i<4; i++)
+        {
+            //if the cell wasn't checked already.
+            if ((int) nextLoc.getX() >= 0 && (int) nextLoc.getX() < sMaze[0].length() && (int) nextLoc.getY() >= 0 && (int) nextLoc.getY() < sMaze.length)
+            {
+                switch(sMaze[(int) nextLoc.getY()].charAt((int) nextLoc.getX()))
+                {
+                    case '#':
+                    break;
+                    case 'E':
+                    endFound = true;
+                    return endFound;
+                    default:
+                    if (checkedCells[(int)nextLoc.getY()][(int)nextLoc.getX()]) break;
+                    Cell newCell = new Cell(currentCell, nextLoc);
+                    checkedCells[(int)nextLoc.getY()][(int)nextLoc.getX()] = true;
+                    S.push(newCell);
+                }
+            }
+            
+            switch(checkingDirection)
+            {
+                case left:
+                checkingDirection = Direction.right;
+                nextLoc.setLocation(currentCell.getX()+1, currentCell.getY());
+                break;
+                case right:
+                checkingDirection = Direction.up;
+                nextLoc.setLocation(currentCell.getX(), currentCell.getY()-1);
+                break;
+                default://up case.
+                checkingDirection = Direction.down;
+                nextLoc.setLocation(currentCell.getX(), currentCell.getY()+1);
+            }
+        }
+        return endFound;
+    }
+
+    public int[][] solveBFS(File maze)
+    {
+        String[] sMaze;
+        try
+        {
+            sMaze = file_to_strings(maze);
+        }
+        catch (Exception e)
+        {
+            //Handle invalid file
+            return new int[0][0];
+        }
+        //---------------------------------------------------------------------------------------
+        Cell currentCell = find_path_BFS(sMaze);
+        
+        Stack stck = new Stack();
+        while (currentCell.entry != null)
+        {
+            stck.push(currentCell);
+            currentCell = currentCell.entry();
+        }
+        stck.push(currentCell);
+
+        int[][] path = new int[stck.size()][2];
+        for (int i=0; i<path.length; i++)
+        {
+            Point loc = (Point) stck.pop();
+            path[i][0] = (int) loc.getY();
+            path[i][1] = (int) loc.getX();
+        }
+
+        return path;
+    }
+
+    private static Cell find_path_BFS(String[] sMaze)
+    {
+        boolean[][] checkedCells = new boolean[sMaze.length][sMaze[0].length()];
+        Point start, end;
+        start = end = new Point(-1, -1);
+        for (int i=0; i<sMaze.length; i++)
+        {
+            for (int j=0; j<sMaze[0].length(); j++)
+            {
+                checkedCells[i][j] = false;
+                switch (sMaze[i].charAt(j))
+                {
+                    case 'S':
+                    start = new Point(j, i);
+                    break;
+                    case 'E':
+                    end = new Point(j, i);
+                }
+            }
+        }
+        Queue Q = new Queue();
+        boolean endFound = false;
+        Cell currentCell = new Cell(null, start);
+
+        endFound = check_adjacents_BFS(currentCell, sMaze, checkedCells, end, Q);
+
+        while(!endFound && !Q.isEmpty())
+        {
+            currentCell = (Cell) Q.dequeue();
+            endFound = check_adjacents_BFS(currentCell, sMaze, checkedCells, end, Q);
+        }
+
+        Cell End = new Cell(currentCell, end);
+        return End;
+    }
+
+    private static boolean check_adjacents_BFS(Cell currentCell, String[] sMaze, boolean[][] checkedCells, Point end, Queue Q)
+    {
+        boolean endFound = false;
+        Direction checkingDirection = Direction.left;
+        Point nextLoc = new Point((int) currentCell.getX()-1, (int) currentCell.getY());
+        for (int i=0; i<4; i++)
+        {
+            if ((int) nextLoc.getX() >= 0 && (int) nextLoc.getX() < sMaze[0].length() && (int) nextLoc.getY() >= 0 && (int) nextLoc.getY() < sMaze.length)
+            {
+                switch(sMaze[(int) nextLoc.getY()].charAt((int) nextLoc.getX()))
+                {
+                    case '#':
+                    break;
+                    case 'E':
+                    endFound = true;
+                    return endFound;
+                    default:
+                    if (checkedCells[(int)nextLoc.getY()][(int)nextLoc.getX()]) break;
+                    Cell newCell = new Cell(currentCell, nextLoc);
+                    checkedCells[(int)nextLoc.getY()][(int)nextLoc.getX()] = true;
+                    Q.enqueue(newCell);
+                }
+            }
+            
+            switch(checkingDirection)
+            {
+                case left:
+                checkingDirection = Direction.right;
+                nextLoc.setLocation(currentCell.getX()+1, currentCell.getY());
+                break;
+                case right:
+                checkingDirection = Direction.up;
+                nextLoc.setLocation(currentCell.getX(), currentCell.getY()-1);
+                break;
+                default://up case.
+                checkingDirection = Direction.down;
+                nextLoc.setLocation(currentCell.getX(), currentCell.getY()+1);
+            }
+        }
+        return endFound;
+    }
 
 
     public int[][] solveBestFS(File maze)
