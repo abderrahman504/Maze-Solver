@@ -35,8 +35,8 @@ public class MazeSolver implements IMazeSolver
     /**
      * Reads a maze from the file fMaze and returns it in the form of an array of strings. 
      * Each string in the array is a line in the file. If something is wrong with the file then an exception is thrown.
-     * @param fMaze the file containing the maze.
-     * @return the contents of the file in the form of an array of strings.
+     * @param fMaze File object of the maze.
+     * @return The contents of the file in the form of an array of strings.
      * @throws Exception
      */
     private static String[] file_to_strings(File fMaze) throws Exception
@@ -85,28 +85,50 @@ public class MazeSolver implements IMazeSolver
             //Handle invalid file
             return new int[0][0];
         }
-        //---------------------------------------------------------------------------------------
-        Cell currentCell = find_path_DFS(sMaze);
         
-        Stack stck = new Stack();
-        while (currentCell.entry != null)
-        {
-            stck.push(currentCell);
-            currentCell = currentCell.entry();
-        }
-        stck.push(currentCell);
-
-        int[][] path = new int[stck.size()][2];
-        for (int i=0; i<path.length; i++)
-        {
-            Point loc = (Point) stck.pop();
-            path[i][0] = (int) loc.getY();
-            path[i][1] = (int) loc.getX();
-        }
-
-        return path;
+        Cell Exit = find_path(sMaze, 'D');
+        return trace_path(Exit);
     }
-    private static Cell find_path_DFS(String[] sMaze)
+
+
+    public int[][] solveBFS(File maze)
+    {
+        String[] sMaze;
+        try
+        {
+            sMaze = file_to_strings(maze);
+        }
+        catch (Exception e)
+        {
+            //Handle invalid file
+            return new int[0][0];
+        }
+        
+        Cell Exit = find_path(sMaze, 'B');
+        return trace_path(Exit);
+    }
+
+
+
+    public int[][] solveBestFS(File maze)
+    {
+        String[] sMaze;
+        try
+        {
+            sMaze = file_to_strings(maze);
+        }
+        catch (Exception e)
+        {
+            //Handle invalid file
+            return new int[0][0];
+        }
+
+        Cell Exit = find_path(sMaze, 'E');
+        return trace_path(Exit);
+    }
+
+
+    private static Cell find_path(String[] sMaze, char mode)
     {
         boolean[][] checkedCells = new boolean[sMaze.length][sMaze[0].length()];
         Point start, end;
@@ -126,23 +148,45 @@ public class MazeSolver implements IMazeSolver
                 }
             }
         }
-        Stack S = new Stack();
         boolean endFound = false;
         Cell currentCell = new Cell(null, start);
-
-        endFound = check_adjacents_DFS(currentCell, sMaze, checkedCells, end, S);
-
-        while(!endFound && !S.isEmpty())
+        switch (mode)
         {
-            currentCell = (Cell) S.pop();
-            endFound = check_adjacents_DFS(currentCell, sMaze, checkedCells, end, S);
-        }
+            case 'D'://Depth.
+            Stack S = new Stack();
+            endFound = check_adjacents(currentCell, sMaze, checkedCells, end, S);
+            while(!endFound && !S.isEmpty())
+            {
+                currentCell = (Cell) S.pop();
+                endFound = check_adjacents(currentCell, sMaze, checkedCells, end, S);
+            }
+            break;
 
+            case 'B'://Breath.
+            Queue Q = new Queue();
+            endFound = check_adjacents(currentCell, sMaze, checkedCells, end, Q);
+            while(!endFound && !Q.isEmpty())
+            {
+                currentCell = (Cell) Q.dequeue();
+                endFound = check_adjacents(currentCell, sMaze, checkedCells, end, Q);
+            }
+            break;
+
+            default://Best.
+            PQueue<Cell> PQ = new PQueue<Cell>();
+            endFound = check_adjacents(currentCell, sMaze, checkedCells, end, PQ);
+            while(!endFound && !PQ.isEmpty())
+            {
+                currentCell = (Cell) PQ.remove_min();
+                endFound = check_adjacents(currentCell, sMaze, checkedCells, end, PQ);
+            }
+        }
         Cell End = new Cell(currentCell, end);
         return End;
     }
 
-    private static boolean check_adjacents_DFS(Cell currentCell, String[] sMaze, boolean[][] checkedCells, Point end, Stack S)
+
+    private static boolean check_adjacents(Cell currentCell, String[] sMaze, boolean[][] checkedCells, Point end, Stack S)
     {
         boolean endFound = false;
         Direction checkingDirection = Direction.left;
@@ -185,77 +229,8 @@ public class MazeSolver implements IMazeSolver
         return endFound;
     }
 
-    public int[][] solveBFS(File maze)
-    {
-        String[] sMaze;
-        try
-        {
-            sMaze = file_to_strings(maze);
-        }
-        catch (Exception e)
-        {
-            //Handle invalid file
-            return new int[0][0];
-        }
-        //---------------------------------------------------------------------------------------
-        Cell currentCell = find_path_BFS(sMaze);
-        
-        Stack stck = new Stack();
-        while (currentCell.entry != null)
-        {
-            stck.push(currentCell);
-            currentCell = currentCell.entry();
-        }
-        stck.push(currentCell);
 
-        int[][] path = new int[stck.size()][2];
-        for (int i=0; i<path.length; i++)
-        {
-            Point loc = (Point) stck.pop();
-            path[i][0] = (int) loc.getY();
-            path[i][1] = (int) loc.getX();
-        }
-
-        return path;
-    }
-
-    private static Cell find_path_BFS(String[] sMaze)
-    {
-        boolean[][] checkedCells = new boolean[sMaze.length][sMaze[0].length()];
-        Point start, end;
-        start = end = new Point(-1, -1);
-        for (int i=0; i<sMaze.length; i++)
-        {
-            for (int j=0; j<sMaze[0].length(); j++)
-            {
-                checkedCells[i][j] = false;
-                switch (sMaze[i].charAt(j))
-                {
-                    case 'S':
-                    start = new Point(j, i);
-                    break;
-                    case 'E':
-                    end = new Point(j, i);
-                }
-            }
-        }
-        Queue Q = new Queue();
-        boolean endFound = false;
-        Cell currentCell = new Cell(null, start);
-
-        endFound = check_adjacents_BFS(currentCell, sMaze, checkedCells, end, Q);
-
-        while(!endFound && !Q.isEmpty())
-        {
-            currentCell = (Cell) Q.dequeue();
-            endFound = check_adjacents_BFS(currentCell, sMaze, checkedCells, end, Q);
-        }
-
-        Cell End = new Cell(currentCell, end);
-        return End;
-    }
-
-    private static boolean check_adjacents_BFS(Cell currentCell, String[] sMaze, boolean[][] checkedCells, Point end, Queue Q)
+    private static boolean check_adjacents(Cell currentCell, String[] sMaze, boolean[][] checkedCells, Point end, Queue Q)
     {
         boolean endFound = false;
         Direction checkingDirection = Direction.left;
@@ -298,76 +273,6 @@ public class MazeSolver implements IMazeSolver
     }
 
 
-    public int[][] solveBestFS(File maze)
-    {
-        String[] sMaze;
-        try
-        {
-            sMaze = file_to_strings(maze);
-        }
-        catch (Exception e)
-        {
-            //Handle invalid file
-            return new int[0][0];
-        }
-        //---------------------------------------------------------------------------------------
-        Cell currentCell = find_path_bestFS(sMaze);
-        
-        Stack stck = new Stack();
-        while (currentCell.entry != null)
-        {
-            stck.push(currentCell);
-            currentCell = currentCell.entry();
-        }
-        stck.push(currentCell);
-
-        int[][] path = new int[stck.size()][2];
-        for (int i=0; i<path.length; i++)
-        {
-            Point loc = (Point) stck.pop();
-            path[i][0] = (int) loc.getY();
-            path[i][1] = (int) loc.getX();
-        }
-
-        return path;
-    }
-
-    private static Cell find_path_bestFS(String[] sMaze)
-    {
-        boolean[][] checkedCells = new boolean[sMaze.length][sMaze[0].length()];
-        Point start, end;
-        start = end = new Point(-1, -1);
-        for (int i=0; i<sMaze.length; i++)
-        {
-            for (int j=0; j<sMaze[0].length(); j++)
-            {
-                checkedCells[i][j] = false;
-                switch (sMaze[i].charAt(j))
-                {
-                    case 'S':
-                    start = new Point(j, i);
-                    break;
-                    case 'E':
-                    end = new Point(j, i);
-                }
-            }
-        }
-        PQueue<Cell> Q = new PQueue<Cell>();
-        boolean endFound = false;
-        Cell currentCell = new Cell(null, start);
-
-        endFound = check_adjacents(currentCell, sMaze, checkedCells, end, Q);
-
-        while(!endFound && !Q.isEmpty())
-        {
-            currentCell = Q.remove_min();
-            endFound = check_adjacents(currentCell, sMaze, checkedCells, end, Q);
-        }
-
-        Cell End = new Cell(currentCell, end);
-        return End;
-    }
-
     private static boolean check_adjacents(Cell currentCell, String[] sMaze, boolean[][] checkedCells, Point end, PQueue<Cell> Q)
     {
         boolean endFound = false;
@@ -390,11 +295,15 @@ public class MazeSolver implements IMazeSolver
                     checkedCells[(int)nextLoc.getY()][(int)nextLoc.getX()] = true;
                     /*
                     The heuristic function calculates the minimum possible number of moves it would
-                    take to move from the current cell to the end of the maze. That is the score of that cell.
-                    The cells with the lowest scores are the most promising and so are checked first in the priority queue. 
+                    take to move from the current cell to the end of the maze. That is the score of the cell.
+                    It also calculates the number of moves it took to reach this cell. That is the cost of the cell.
+                    The sum of the cost and score is a cell's rating.
+                    The cells with the lowest ratings are the most promising and so are checked first in the priority queue. 
                     */
                     int cellScore = (int) (Math.abs(currentCell.getX() - end.getX()) + Math.abs(currentCell.getY() - end.getY())); 
-                    Q.insert(newCell, cellScore);
+                    int cellCost = get_cell_cost(currentCell);
+                    int rating = cellCost + cellScore;
+                    Q.insert(newCell, rating);
                 }
             }
             
@@ -414,6 +323,37 @@ public class MazeSolver implements IMazeSolver
             }
         }
         return endFound;
+    }
+
+
+    private static int[][] trace_path(Cell currentCell)
+    {
+        Stack stck = new Stack();
+        while (currentCell.entry != null)
+        {
+            stck.push(currentCell);
+            currentCell = currentCell.entry();
+        }
+        stck.push(currentCell);
+
+        int[][] path = new int[stck.size()][2];
+        for (int i=0; i<path.length; i++)
+        {
+            Point loc = (Point) stck.pop();
+            path[i][0] = (int) loc.getY();
+            path[i][1] = (int) loc.getX();
+        }
+        return path;
+    }
+    private static int get_cell_cost(Cell currentCell)
+    {
+        int cost = 0;
+        while (currentCell.entry != null)
+        {
+            cost++;
+            currentCell = currentCell.entry;
+        }
+        return cost;
     }
 }
 
